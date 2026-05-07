@@ -1,0 +1,5 @@
+pyspark==4.1.1
+python-docx==1.2.0
+faker
+pandas
+numpy
