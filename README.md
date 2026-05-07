@@ -6,7 +6,7 @@ This project implements a complete data engineering pipeline to process, clean, 
 ## Technical Choice: Pandas vs. PySpark
 While the initial assessment suggested PySpark, this implementation uses **Pandas** for the following reasons:
 1. **Efficiency for Scale**: The current dataset contains approximately 2,000 rows. Pandas is significantly faster and more resource-efficient than PySpark for data of this scale, which requires significant overhead to initialize a SparkSession.
-2. **Environment Compatibility**: During development, we encountered persistent issues with the local Java Runtime environment required by PySpark. To ensure a robust, runnable, and easily verifiable submission, we opted for the Pandas stack.
+2. **Environment Compatibility & Efficiency**: During development, we encountered persistent issues with the local Java Runtime environment required by PySpark. To ensure a robust, runnable, and easily verifiable submission while managing time effectively to stay within the 6-hour assessment window, we opted for the Pandas stack.
 3. **Logic Parity**: Every complex operation requested (Window functions, joins, schema enforcement) has been implemented in Pandas with the exact same logical rigor as a Spark implementation.
 
 ## Task Implementation Summary
