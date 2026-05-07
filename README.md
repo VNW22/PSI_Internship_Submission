@@ -5,10 +5,10 @@ This project implements a complete data engineering pipeline to process, clean, 
 
 ## Technical Choice: Pandas vs. PySpark
 This implementation provides the full ETL logic in two formats:
-1. **Pandas (Executed)**: The primary execution script (`pipeline.py`) is written in Pandas. We opted for this stack to ensure a robust, runnable, and verified submission within the 6-hour assessment window.
-2. **PySpark (Implementation Only)**: A full PySpark version (`pyspark_pipeline.py`) was implemented to meet the original requirements. However, due to persistent environment compatibility issues between PySpark 4.1.1 and the local Java Runtime (Java 26), which caused internal JVM errors, we chose not to use this script for the final data generation to avoid exceeding the time limit with troubleshooting.
+1. **Pandas (Executed)**: The primary execution script (`pipeline.py`) is written in Pandas. I opted for this stack to ensure a robust, runnable, and verified submission within the 6-hour assessment window.
+2. **PySpark (Implementation Only)**: A full PySpark version (`pyspark_pipeline.py`) was implemented to meet the original requirements. However, due to persistent environment compatibility issues between PySpark 4.1.1 and the local Java Runtime (Java 26), which caused internal JVM errors, I chose not to use this script for the final data generation to avoid exceeding the time limit with troubleshooting.
 
-By providing both, we demonstrate full proficiency in the requested PySpark logic while delivering a functional result using the more stable local Pandas environment.
+By providing both, I demonstrate full proficiency in the requested PySpark logic while delivering a functional result using the more stable local Pandas environment.
 
 ## Task Implementation Summary
 
