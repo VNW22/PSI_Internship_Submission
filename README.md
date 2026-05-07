@@ -1,48 +1,46 @@
-# E-Commerce ETL Pipeline Submission
+# E-Commerce ETL Pipeline Submission (PySpark)
 
 ## Project Overview
-This project implements a complete data engineering pipeline to process, clean, and analyze e-commerce data. The pipeline handles data ingestion, quality enforcement, complex transformations, and partitioned storage.
+This project implements a complete data engineering pipeline to process, clean, and analyze e-commerce data using **PySpark**. The pipeline handles data ingestion with strict schema enforcement, complex window-based transformations, and partitioned storage in Parquet format.
 
-## Technical Choice: Pandas vs. PySpark
-While the initial assessment suggested PySpark, this implementation uses **Pandas** for the following reasons:
-1. **Efficiency for Scale**: The current dataset contains approximately 2,000 rows. Pandas is significantly faster and more resource-efficient than PySpark for data of this scale, which requires significant overhead to initialize a SparkSession.
-2. **Environment Compatibility & Efficiency**: During development, we encountered persistent issues with the local Java Runtime environment required by PySpark. To ensure a robust, runnable, and easily verifiable submission while managing time effectively to stay within the 6-hour assessment window, we opted for the Pandas stack.
-3. **Logic Parity**: Every complex operation requested (Window functions, joins, schema enforcement) has been implemented in Pandas with the exact same logical rigor as a Spark implementation.
+## Technical Choice: PySpark
+This implementation uses **PySpark 4.1.1**. While we initially considered a Pandas-based approach due to the small dataset size and some early environment setup challenges with Java, we have successfully configured the environment and implemented the full solution in PySpark to meet the original assessment requirements.
 
 ## Task Implementation Summary
 
 ### Task 01: Data Ingestion & Schema Enforcement
-- **Approach**: Used a custom loader that validates every row against expected types. 
-- **Handling**: Any row containing NULL values in key fields or failed type casts is diverted to the `output/rejected/` directory to prevent silent data loss.
+- **Approach**: Used `StructType` to define explicit schemas for all four tables.
+- **Handling**: Rows failing schema validation are moved to the `output/rejected/` directory using Spark's `subtract` and `dropna` logic.
 
 ### Task 02: Data Quality & Cleaning
-- **Duplicates**: Removed using `drop_duplicates()`.
-- **Date Normalization**: Robust parsing that handles both `YYYY-MM-DD` and `DD/MM/YYYY` formats.
-- **Categorical Cleaning**: Standardized `customer_tier` to lowercase for consistent grouping.
+- **Duplicates**: Removed using `dropDuplicates()`.
+- **Date Normalization**: Used `F.coalesce` and `F.to_date` to handle multiple incoming date formats (`yyyy-MM-dd` and `dd/MM/yyyy`).
+- **Lowercasing**: Standardized `customer_tier` values using Spark's native `lower()` function.
 
 ### Task 03: Joins & Enrichment
-- **Orphan Identification**: Used an "anti-join" logic to find items referencing non-existent orders, saving them to `output/orphaned/`.
-- **Derivations**: Calculated `net_amount` based on discounts at the row level.
+- **Orphan Items**: Isolated using a `left_anti` join between `order_items` and `orders`.
+- **Enrichment**: Joined orders with customers and items. Added a calculated `net_amount` column.
 
 ### Task 04: Aggregations & Window Functions
-- **Ranking**: Implemented country-wise spending ranks using dense ranking logic.
-- **Rolling Windows**: Created a 7-day rolling order count per customer based on chronologically sorted order dates.
+- **Ranking**: Used `Window.partitionBy("country")` and `F.rank()` to rank customers by lifetime spend.
+- **Rolling Window**: Implemented a 7-day rolling order count per customer using `rangeBetween` on unix timestamps.
+- **Monthly Revenue Share**: Calculated category-wise revenue share per month using window partitions.
 
 ### Task 05: Return Analysis
-- **Return Rates**: Computed the ratio of returns per category and tier relative to total unique orders.
-- **Anomaly Detection**: Flagged instances where refund amounts exceeded the calculated net order amount.
+- **Metrics**: Calculated return rates per category and tier.
+- **Anomaly Detection**: Flagged returns where the refund amount exceeded the net order total.
 
 ### Task 06: Output & Partitioning
-- **Storage**: The final dataset is saved as a **Parquet** file.
-- **Organization**: Partitioned physically by `year` and `month` to simulate professional data lake structures.
+- **Storage**: Final enriched data is saved in **Parquet** format.
+- **Partitioning**: Data is partitioned physically by `year` and `month` to optimize query performance.
 
 ## Bonus Challenges
-- **B1 (Unit Tests)**: Created `test_pipeline.py` to verify date logic and calculations.
-- **B3 (DQ Gate)**: Implemented a runtime check that raises an exception if NULL customers are detected after the join phase.
-- **Optimized Windowing**: Utilized vectorized rolling functions for high-performance time-series analysis.
+- **B2 (Broadcast Join)**: Applied a broadcast hint to the `customers` table during the join to optimize performance.
+- **B3 (DQ Gate)**: Added a check before the final write to ensure no NULL customer IDs exist in the enriched dataset.
+- **B4 (Explain Plan)**: Included a `df.explain(mode="formatted")` call at the end of the pipeline to audit the execution plan.
 
 ---
 ## Setup & Execution
-1. Install requirements: `pip install -r requirements.txt`
-2. Run pipeline: `python pipeline.py`
-3. Verify tests: `pytest test_pipeline.py`
+1. **Prerequisite**: Java Runtime (OpenJDK/Temurin) must be installed.
+2. Install requirements: `pip install -r requirements.txt`
+3. Run pipeline: `python pipeline.py`
